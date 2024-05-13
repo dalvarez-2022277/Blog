@@ -1,18 +1,21 @@
-"use stric";
-
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { dbConnection } from "./mondodb.js";
+import ComentsRoutes from "../src/Coments/Coments.routes.js";
+import PostRoutes from "../src/Post/Post.routes.js";
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
+    this.ComentsPath = "/blog/v1/coments";
+    this.PostPath = "/blog/v1/publicate";
+
     this.dbConectarDb();
     this.middlewares();
-    //this.routes();
+    this.routes();
   }
 
   async dbConectarDb() {
@@ -20,14 +23,17 @@ class Server {
   }
 
   middlewares() {
-    this.app.use(express.urlencoded({extended: false}))
+    this.app.use(express.urlencoded({ extended: false }));
     this.app.use(express.json());
     this.app.use(cors());
     this.app.use(helmet());
     this.app.use(morgan("dev"));
   }
 
-  //routes() {}
+  routes() {
+    this.app.use(this.ComentsPath, ComentsRoutes);
+    this.app.use(this.PostPath, PostRoutes);
+  }
 
   listen() {
     this.app.listen(this.port, () => {
