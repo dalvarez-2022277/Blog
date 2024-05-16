@@ -15,10 +15,10 @@ const postSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
   },
-  comments: [
+  Comments: [  // Asegúrate de que el campo esté definido como 'Comments' aquí
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Comment",
+      ref: "Comment", // Esto debe coincidir con el nombre del modelo de los comentarios
     },
   ],
   status: {
@@ -26,5 +26,6 @@ const postSchema = new mongoose.Schema({
     default: true,
   },
 });
+
 
 export default mongoose.model("Post", postSchema);

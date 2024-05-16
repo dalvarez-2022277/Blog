@@ -1,22 +1,26 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from "mongoose";
 
-const commentSchema = new mongoose.Schema({
-  name: {
+const CommentsSchema = new Schema({
+  idUser: {
     type: String,
-    required: true,
+    ref: "Users",
+  },
+  userNameCom: {
+    type: String,
+    ref: "Users",
   },
   comment: {
     type: String,
     required: true,
   },
-  postId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Post",
+  idPosteo: {
+    type: String,
+    ref: "Posts",
   },
-  status: {
+  stateComment: {
     type: Boolean,
-    default: true 
+    default: true,
   },
 });
 
-export default mongoose.model("Comment", commentSchema);
+export default mongoose.model("Comments", CommentsSchema);

@@ -1,38 +1,38 @@
 import { Router } from "express";
 import { check } from "express-validator";
-import {
-  createComment,
-  getCommentsByPost,
-  getComment,
-  updateComment,
-  deactivateComment,
-} from "./Coments.controller.js";
+import { validarCampos } from "../middlewares/validar-campos.js";
+import { validarJWT } from "../helpers/validarJwt.js";
+import { createComment, editComment, deleteComment } from './Coments.controller.js';
 
-const router = Router();
+const routerComments = Router();
 
-router.get("/:postId", getCommentsByPost);
-
-router.get("/comment/:id", getComment);
-
-router.post(
-  "/",
-  [
-    check("name", "Name is required").not().isEmpty(),
-    check("comment", "Comment text is required").not().isEmpty(),
-    check("postId", "Post ID is required").not().isEmpty(),
-  ],
-  createComment
+// Ruta para crear un comentario en una publicación específica
+routerComments.post(
+    "/:idPost",
+    [
+        check("comment", "Comment is required").not().isEmpty(),
+        validarJWT,
+        validarCampos,
+    ],
+    createComment
 );
 
-router.put(
-  "/:id",
-  [
-    check("name", "Name is required").not().isEmpty(),
-    check("comment", "Comment text is required").not().isEmpty(),
-  ],
-  updateComment
+// Ruta para editar un comentario específico en una publicación
+routerComments.put(
+    "/:idPost/:idComment",
+    [
+        check("comment", "Comment is required").not().isEmpty(),
+        validarJWT,
+        validarCampos,
+    ],
+    editComment
 );
 
-router.put("/deactivate/:id", deactivateComment);
+// Ruta para cambiar el estado de eliminación de un comentario específico en una publicación
+routerComments.delete(
+    "/:idPost/:idComment",
+    validarJWT,
+    deleteComment
+);
 
-export default router;
+export default routerComments;

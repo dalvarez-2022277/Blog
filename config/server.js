@@ -5,11 +5,13 @@ import morgan from "morgan";
 import { dbConnection } from "./mondodb.js";
 import ComentsRoutes from "../src/Coments/Coments.routes.js";
 import PostRoutes from "../src/Post/Post.routes.js";
+import AuthRoutes from "../src/auth/auth.routes.js";
 
 class Server {
   constructor() {
     this.app = express();
     this.port = process.env.PORT;
+    this.authPath = '/blog/v1/auth'
     this.ComentsPath = "/blog/v1/coments";
     this.PostPath = "/blog/v1/publicate";
 
@@ -33,6 +35,7 @@ class Server {
   routes() {
     this.app.use(this.ComentsPath, ComentsRoutes);
     this.app.use(this.PostPath, PostRoutes);
+    this.app.use(this.authPath, AuthRoutes);
   }
 
   listen() {

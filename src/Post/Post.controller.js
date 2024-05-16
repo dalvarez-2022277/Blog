@@ -1,11 +1,19 @@
-import mongoose from 'mongoose';
-import Post from './Post.model.js';
-import Comment from '../Coments/Coments.model.js';
+import mongoose from "mongoose";
+import Post from "./Post.model.js";
+import Comments from "../Coments/Coments.model.js";
+import jwt from "jsonwebtoken";
 
 export const createPost = async (req, res) => {
   try {
-    const { title, description, link, imageUrl, comments, status } = req.body;
-    const newPost = new Post({ title, description, link, imageUrl, comments, status });
+    const validarToken = req.user;
+    if (validarToken.role !== "admin") {
+      return res.status(401).json({
+        message: "El usuario no tiene permiso para crear una publicación.",
+      });
+    }
+
+    const { title, description, link, imageUrl } = req.body;
+    const newPost = new Post({ title, description, link, imageUrl });
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
@@ -15,23 +23,42 @@ export const createPost = async (req, res) => {
 
 export const getPosts = async (req, res) => {
   try {
-    // Aquí utilizamos 'populate' para incluir los comentarios asociados con cada post
-    const posts = await Post.find().populate('comments');
-    res.status(200).json(posts);
+    const posts = await Post.find();
+    const postsWithComments = await Promise.all(
+      posts.map(async (post) => {
+        const comments = await Comments.find({ idPosteo: post._id });
+        return { ...post.toObject(), comments };
+      })
+    );
+
+    res.json(postsWithComments);
   } catch (error) {
-    res.status(404).json({ error: error.message });
+    console.error("Error al obtener las publicaciones y comentarios:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+
+
+
 export const updatePost = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, description, link, imageUrl } = req.body;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(404).send(`No post with id: ${id}`);
+    const validarToken = req.user;
+    if (validarToken.role !== "admin") {
+      return res.status(401).json({
+        message: "El usuario no tiene permiso para crear una publicación.",
+      });
     }
-    const updatedPost = await Post.findByIdAndUpdate(id, { title, description, link, imageUrl }, { new: true });
+
+    const postId = req.params.id; 
+    const { title, description, link, imageUrl } = req.body;
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { title, description, link, imageUrl },
+      { new: true }
+    );
     if (!updatedPost) {
-      return res.status(404).send('Post not found');
+      return res.status(404).send("Post not found");
     }
     res.status(200).json(updatedPost);
   } catch (error) {
@@ -41,6 +68,12 @@ export const updatePost = async (req, res) => {
 
 export const deletePost = async (req, res) => {
   try {
+    const validarToken = req.user;
+    if (validarToken.role !== "admin") {
+      return res.status(401).json({
+        message: "El usuario no tiene permiso para crear una publicación.",
+      });
+    }
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(404).send(`No post with id: ${id}`);
